@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Create the fifo
+fifo=$HOME/.cache/lemonaid.fifo
+[ -e "$fifo" ] && rm "$fifo"
+mkfifo "$fifo"
+
+trap 'kill $(jobs -p)' EXIT
+
+declare -A cache
+while IFS=':' read -r name val
+do
+	# Store value in cache
+	cache[$name]=$val
+
+	# Load foramt
+	bar=${cache[format]}
+
+	# Substitute "[*]" with it's cached value
+	while read line; do
+		bar=${bar/"$line"/${cache[${line:1:${#line}-2}]}}
+	done < <(echo ${cache[format]} | grep -Po '\[[^\]]*\]')
+
+	echo $bar
+done < "$fifo" &
+
+# Execute lemonbrrc into the fifo
+$XDG_CONFIG_HOME/lemonbar/lemonbarrc > $fifo &
+
+# Wait for $bar and lemonbarrc to exit
+wait
+
