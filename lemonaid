@@ -15,15 +15,15 @@ do
 	cache[$name]=$val
 
 	# Load foramt
-	bar=${cache[format]}
+	bar="${cache[format]}"
 
 	# Substitute "[*]" with it's cached value
 	while read line; do
-		bar=${bar/"$line"/${cache[${line:1:${#line}-2}]}}
-	done < <(echo ${cache[format]} | grep -Po '\[[^\]]*\]')
+		bar="${bar/"$line"/"${cache[${line:1:${#line}-2}]}"}"
+	done < <(echo "${cache[format]}" | grep -Po '\[[^\]]*\]')
 
 	# echo the bar into lemonbar
-	echo $bar
+	echo "$bar"
 done < "$fifo" &
 
 # Execute lemonbrrc into the fifo
