@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # Create the fifo
-fifo=$HOME/.cache/lemonaid.fifo
+fifo=$XDG_CACHE_HOME/lemonaid.fifo
 [ -e "$fifo" ] && rm "$fifo"
 mkfifo "$fifo"
 
 trap 'kill $(jobs -p)' EXIT
 
+# Read the fifo and print bar on update
 declare -A cache
 while IFS=':' read -r name val
 do
@@ -21,6 +22,7 @@ do
 		bar=${bar/"$line"/${cache[${line:1:${#line}-2}]}}
 	done < <(echo ${cache[format]} | grep -Po '\[[^\]]*\]')
 
+	# echo the bar into lemonbar
 	echo $bar
 done < "$fifo" &
 
